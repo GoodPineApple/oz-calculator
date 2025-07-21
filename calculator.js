@@ -1,14 +1,60 @@
-let history = []; // 계산 기록 저장
-let currentInput = "";
-let firstNumber = null;
-let operator = null;
-let isResultDisplayed = false; // 계산 결과가 방금 표시됐는지 여부
 
-// 숫자 버튼 클릭 시
+let history = []; // 계산 기록을 저장하는 배열
+let currentInput = ""; // 현재 입력값
+let firstNumber = null; // 첫 번째 숫자
+let operator = null; // 선택된 연산자
+let isError = false;
+const VALID_NUMBERS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+const VALID_OPERATORS = ["+", "-", "*", "/"];
+
+const resetDisplay = () => {
+  const display = document.getElementById("display");
+  display.textContent = "0";
+  currentInput = "";
+};
+
+const setDisplay = (text) => {
+  const display = document.getElementById("display");
+  display.textContent = text;
+  currentInput = text;
+};
+
+const subDisplay = () => {
+  const display = document.getElementById("display");
+  const textSubbed = display.textContent.slice(0, -1);
+  if (textSubbed === "") resetDisplay();
+  else setDisplay(textSubbed);
+};
+
+checkValidAppendNumber = (number) => {
+  if (!VALID_NUMBERS.includes(number)) {
+    isError = true;
+    throw new Error("유효한 숫자를 입력하세요.");
+  }
+};
+
+checkValidCurrentInput = (op) => {
+  if (!["+", "-", "*", "/"].includes(op)) {
+    isError = true;
+    throw new Error("유효한 연산자를 선택하세요.");
+  }
+  if (!currentInput) {
+    isError = true;
+    throw new Error("숫자를 먼저 입력하세요.");
+  }
+  if (isNaN(firstNumber)) {
+    isError = true;
+    throw new Error("유효한 숫자를 입력하세요.");
+  }
+};
+
 const appendNumber = (number) => {
-  if (!/^[0-9]$/.test(number)) {
-    showError("숫자를 입력하세요.");
-    return;
+  try {
+    checkValidAppendNumber(number);
+    setDisplay((currentInput += number));
+    removeError();
+  } catch (error) {
+    showError(error.message);
   }
 
   // 결과가 표시된 상태라면 입력 초기화
@@ -23,9 +69,14 @@ const appendNumber = (number) => {
 
 // 연산자 버튼 클릭 시
 const setOperator = (op) => {
-  if (!["+", "-", "*", "/"].includes(op)) {
-    showError("올바른 연산자를 선택하세요.");
-    return;
+  try {
+    checkValidCurrentInput(op);
+    firstNumber = Number(currentInput);
+    if (isNaN(firstNumber)) throw new Error("유효한 숫자를 입력하세요.");
+    operator = op;
+    resetDisplay();
+  } catch (error) {
+    showError(error.message);
   }
 
   if (currentInput === "") {
@@ -52,44 +103,59 @@ const updateDisplay = (value) => {
   }
 };
 
-// 계산 실행
 const calculate = () => {
   const resultElement = document.getElementById("result");
+  try {
+    if (firstNumber === null || operator === null || !currentInput) {
+      isError = true;
+      throw new Error("계산에 필요한 값이 부족합니다.");
+    }
 
-  if (firstNumber === null || operator === null || currentInput === "") {
-    showError("계산에 필요한 값이 부족합니다.");
-    return;
-  }
+    const secondNumber = Number(currentInput);
+    if (isNaN(secondNumber)) {
+      isError = true;
+      throw new Error("유효한 숫자를 입력하세요.");
+    }
+    if (operator === "/" && secondNumber === 0) {
+      isError = true;
+      throw new Error("0으로 나눌 수 없습니다.");
+    }
 
-  const secondNumber = Number(currentInput);
-  if (isNaN(secondNumber)) {
-    showError("두 번째 숫자가 유효하지 않습니다.");
-    return;
-  }
+    let result;
+    // 7. operator에 따라 사칙연산 수행 (switch 문 사용 권장)
+    switch (operator) {
+      case "+":
+        result = firstNumber + secondNumber;
+        break;
+      case "-":
+        result = firstNumber - secondNumber;
+        break;
+      case "*":
+        result = firstNumber * secondNumber;
+        break;
+      case "/":
+        result = firstNumber / secondNumber;
+        break;
+    }
+    // 계산 기록 저장
+    const record = { firstNumber, operator, secondNumber, result };
+    history.push(record);
+    console.log("계산 기록:", JSON.stringify(history, null, 2));
 
-  if (operator === "/" && secondNumber === 0) {
-    showError("0으로 나눌 수 없습니다.");
-    return;
-  }
+    clearDisplay();
 
-  let result;
+    // 결과 출력
+    resultElement.classList.remove("d-none", "alert-danger");
+    resultElement.classList.add("alert-info");
+    resultElement.textContent = `결과: ${result}`;
 
-  switch (operator) {
-    case "+":
-      result = firstNumber + secondNumber;
-      break;
-    case "-":
-      result = firstNumber - secondNumber;
-      break;
-    case "*":
-      result = firstNumber * secondNumber;
-      break;
-    case "/":
-      result = firstNumber / secondNumber;
-      break;
-    default:
-      showError("올바른 연산자가 아닙니다.");
-      return;
+    // // 계산 후 초기화
+    // currentInput = result.toString();
+    // firstNumber = null;
+    // operator = null;
+    // document.getElementById("display").textContent = currentInput;
+  } catch (error) {
+    showError(error.message);
   }
 
   resultElement.classList.remove("d-none", "alert-danger");
@@ -136,18 +202,19 @@ const showError = (message) => {
   resultElement.textContent = `에러: ${message}`;
 };
 
-// 히스토리 출력
-const showHistory = () => {
-  const historyList = document.getElementById("historyList");
-  if (!historyList) return;
-
-  historyList.innerHTML = "";
-  history.forEach((entry, index) => {
-    const li = document.createElement("li");
-    li.className = "list-group-item";
-    li.textContent = `${index + 1}. ${entry.firstNumber} ${entry.operator} ${
-      entry.secondNumber
-    } = ${entry.result}`;
-    historyList.appendChild(li);
-  });
+const removeError = () => {
+  isError = false;
+  const resultElement = document.getElementById("result");
+  resultElement.classList.remove("alert-danger");
+  resultElement.textContent = "";
 };
+
+document.addEventListener("keydown", (event) => {
+  // console.log(event);
+  const key = event.key;
+  console.log(key);
+  if (VALID_NUMBERS.includes(key)) appendNumber(key);
+  if (VALID_OPERATORS.includes(key)) setOperator(key);
+  if (key === "Enter") calculate();
+  if (key === "Backspace") subDisplay();
+});
