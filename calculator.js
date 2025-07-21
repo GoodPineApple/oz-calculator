@@ -1,3 +1,4 @@
+
 let history = []; // 계산 기록을 저장하는 배열
 let currentInput = ""; // 현재 입력값
 let firstNumber = null; // 첫 번째 숫자
@@ -55,9 +56,18 @@ const appendNumber = (number) => {
   } catch (error) {
     showError(error.message);
   }
+
+  // 결과가 표시된 상태라면 입력 초기화
+  if (isResultDisplayed) {
+    currentInput = "";
+    isResultDisplayed = false;
+  }
+
+  currentInput += number;
+  updateDisplay(currentInput);
 };
 
-// 연산자 버튼 클릭 시 연산자 설정
+// 연산자 버튼 클릭 시
 const setOperator = (op) => {
   try {
     checkValidCurrentInput(op);
@@ -68,15 +78,29 @@ const setOperator = (op) => {
   } catch (error) {
     showError(error.message);
   }
+
+  if (currentInput === "") {
+    showError("숫자를 먼저 입력하세요.");
+    return;
+  }
+
+  firstNumber = Number(currentInput);
+  if (isNaN(firstNumber)) {
+    showError("유효한 숫자를 입력하세요.");
+    return;
+  }
+
+  operator = op;
+  currentInput = "";
+  updateDisplay("0");
 };
 
-// 초기화 버튼 클릭 시 모든 값 초기화
-const clearDisplay = () => {
-  currentInput = "";
-  firstNumber = null;
-  operator = null;
-  document.getElementById("display").textContent = "0";
-  document.getElementById("result").classList.add("d-none");
+// 디스플레이 업데이트
+const updateDisplay = (value) => {
+  const display = document.getElementById("display");
+  if (display) {
+    display.textContent = value;
+  }
 };
 
 const calculate = () => {
@@ -133,6 +157,41 @@ const calculate = () => {
   } catch (error) {
     showError(error.message);
   }
+
+  resultElement.classList.remove("d-none", "alert-danger");
+  resultElement.classList.add("alert-info");
+  resultElement.textContent = `결과: ${result}`;
+
+  // 계산 기록 저장
+  const record = {
+    firstNumber,
+    operator,
+    secondNumber,
+    result,
+  };
+  history.push(record);
+  showHistory();
+
+  // 다음 입력을 위한 초기화
+  currentInput = result.toString();
+  firstNumber = null;
+  operator = null;
+  updateDisplay(currentInput);
+  isResultDisplayed = true; // 결과가 표시됨
+};
+
+// 전체 초기화
+const clearDisplay = () => {
+  currentInput = "";
+  firstNumber = null;
+  operator = null;
+  isResultDisplayed = false;
+  updateDisplay("0");
+  const result = document.getElementById("result");
+  result.classList.add("d-none");
+  result.textContent = "";
+  document.getElementById("historyList").innerHTML = "";
+  history = [];
 };
 
 // 에러 메시지 출력
