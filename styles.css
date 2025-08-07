@@ -1,28 +1,104 @@
-body {
-    background-color: #f8f9fa;
+:root {
+    --bg-color: #2c3e50; /* 어두운 파란색 계열 */
+    --container-bg: #34495e; /* 약간 밝은 파란색 계열 */
+    --display-bg: #2c3e50;
+    --display-text: #ecf0f1; /* 밝은 회색 */
+    --btn-bg: #95a5a6; /* 회색 */
+    --btn-hover-bg: #7f8c8d; /* 어두운 회색 */
+    --operator-bg: #f39c12; /* 주황색 */
+    --operator-hover-bg: #e67e22; /* 어두운 주황색 */
+    --special-bg: #c0392b; /* 빨간색 */
+    --special-hover-bg: #e74c3c; /* 밝은 빨간색 */
+    --text-color: #ecf0f1;
+    --font-family: "Poppins", sans-serif;
 }
+
+body {
+    background-color: var(--bg-color);
+    font-family: var(--font-family);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
 .calculator-container {
     max-width: 400px;
-    margin: 50px auto;
-    padding: 20px;
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 0;
+    padding: 30px;
+    background-color: var(--container-bg);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
+
+h1 {
+    font-weight: 500;
+}
+
 #display {
-    font-size: 1.5rem;
+    font-size: 2.5rem;
     text-align: right;
-    padding: 10px;
-    background-color: #f1f3f5;
-    border: 1px solid #ced4da;
-    border-radius: 5px;
-    margin-bottom: 10px;
+    padding: 20px;
+    background-color: var(--display-bg);
+    border: none;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    color: var(--display-text);
+    font-weight: 300;
 }
+
 .calc-btn {
-    font-size: 1.2rem;
-    padding: 15px;
-    height: 60px;
+    font-size: 1.5rem;
+    padding: 20px;
+    height: 80px;
+    border: none;
+    border-radius: 15px;
+    background-color: var(--btn-bg);
+    color: white;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    font-weight: 400;
 }
+
+.calc-btn:hover {
+    background-color: var(--btn-hover-bg);
+    transform: translateY(-2px);
+}
+
+.calc-btn:active {
+    transform: translateY(0);
+}
+
+.btn-warning {
+    background-color: var(--operator-bg) !important;
+}
+
+.btn-warning:hover {
+    background-color: var(--operator-hover-bg) !important;
+}
+
+.btn-danger {
+    background-color: var(--special-bg) !important;
+}
+
+.btn-danger:hover {
+    background-color: var(--special-hover-bg) !important;
+}
+
 .result-alert {
-    margin-top: 10px;
+    margin-top: 15px;
+    font-size: 1.1rem;
+}
+
+#history {
+    margin-top: 20px;
+}
+
+#historyList {
+    background-color: var(--display-bg);
+    border-radius: 10px;
+    padding: 15px;
+    max-height: 150px;
+    overflow-y: auto;
 }
